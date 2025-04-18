@@ -1,0 +1,72 @@
+{
+  "name": "openaitestgen",
+  "displayName": "VSCode Test Generator",
+  "description": "A Visual Studio Code extension to help developers generate unit tests and integration tests using an OpenAI-based API.",
+  "version": "0.1.0",
+  "publisher": "ytn.ydv",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "openaitestgen.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "openaitestgen.generateTests",
+        "title": "Generate Test with VSTestGen"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "openaitestgen.generateTests",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "openaitestgen.generateTests",
+          "group": "navigation",
+          "when": "resourceLangId == javascript || resourceLangId == typescript"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.99.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "eslint": "^9.23.0",
+    "typescript": "^5.8.2",
+    "ts-loader": "^9.5.2",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "@types/axios": "^0.9.36"
+  }
+}
