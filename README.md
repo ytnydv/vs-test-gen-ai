@@ -1,6 +1,6 @@
-# openaitestgen README
+# vstestgenai README
 
-This is the README for your extension "openaitestgen". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "vstestgenai". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 

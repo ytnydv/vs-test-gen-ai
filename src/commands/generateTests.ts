@@ -26,8 +26,23 @@ export async function generateTests(uri?: vscode.Uri) {
     });
     if (!testType) return;
 
-    const framework = await vscode.window.showQuickPick(['Angular', 'React'], {
-        placeHolder: 'Select the framework'
+    // Read file content
+    const fileContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
+
+    // Framework detection logic
+    const frameworks = ['Angular', 'React', 'Vue', 'Node.js', 'Playwright', 'Java', 'Python'];
+    let detectedFramework: string | undefined;
+    if (/from\s+['"]@angular/.test(fileContent)) detectedFramework = 'Angular';
+    else if (/from\s+['"]react['"]/.test(fileContent)) detectedFramework = 'React';
+    else if (/from\s+['"]vue['"]/.test(fileContent)) detectedFramework = 'Vue';
+    else if (/from\s+['"]playwright['"]/.test(fileContent)) detectedFramework = 'Playwright';
+    else if (/\.java$/.test(fileUri.fsPath)) detectedFramework = 'Java';
+    else if (/\.py$/.test(fileUri.fsPath)) detectedFramework = 'Python';
+    else if (/require\(['"]express['"]\)/.test(fileContent) || /from\s+['"]express['"]/.test(fileContent)) detectedFramework = 'Node.js';
+
+    const framework = await vscode.window.showQuickPick(frameworks, {
+        placeHolder: 'Select the framework',
+        ...(detectedFramework && { activeItem: detectedFramework })
     });
     if (!framework) return;
 
@@ -36,8 +51,7 @@ export async function generateTests(uri?: vscode.Uri) {
     // const apiUrl = vscode.workspace.getConfiguration('openai').get('apiUrl') as string;
     // const apiKey = vscode.workspace.getConfiguration('openai').get('apiKey') as string;
 
-    // Read file content
-    const fileContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
+
 
     const openAIClient = new OpenAIClient(apiUrl, apiKey);
 

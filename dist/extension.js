@@ -44,12 +44,12 @@ exports.deactivate = deactivate;
 const vscode = __importStar(__webpack_require__(1));
 const generateTests_1 = __webpack_require__(2);
 function activate(context) {
-    console.log('Congratulations, your extension "openaitestgen" is now active! ');
-    const disposable = vscode.commands.registerCommand('openaitestgen.helloWorld', () => {
-        vscode.window.showInformationMessage('Hello World from OpenAITestGen! YYYY');
+    console.log('Congratulations, your extension "vstestgenai" is now active! ');
+    const disposable = vscode.commands.registerCommand('vstestgenai.helloWorld', () => {
+        vscode.window.showInformationMessage('Hello World from vstestgenai!');
     });
     context.subscriptions.push(disposable);
-    const generateTestCommand = vscode.commands.registerCommand('openaitestgen.generateTests', generateTests_1.generateTests);
+    const generateTestCommand = vscode.commands.registerCommand('vstestgenai.generateTests', generateTests_1.generateTests);
     context.subscriptions.push(generateTestCommand);
 }
 // This method is called when your extension is deactivated
@@ -128,8 +128,28 @@ async function generateTests(uri) {
     });
     if (!testType)
         return;
-    const framework = await vscode.window.showQuickPick(['Angular', 'React'], {
-        placeHolder: 'Select the framework'
+    // Read file content
+    const fileContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
+    // Framework detection logic
+    const frameworks = ['Angular', 'React', 'Vue', 'Node.js', 'Playwright', 'Java', 'Python'];
+    let detectedFramework;
+    if (/from\s+['"]@angular/.test(fileContent))
+        detectedFramework = 'Angular';
+    else if (/from\s+['"]react['"]/.test(fileContent))
+        detectedFramework = 'React';
+    else if (/from\s+['"]vue['"]/.test(fileContent))
+        detectedFramework = 'Vue';
+    else if (/from\s+['"]playwright['"]/.test(fileContent))
+        detectedFramework = 'Playwright';
+    else if (/\.java$/.test(fileUri.fsPath))
+        detectedFramework = 'Java';
+    else if (/\.py$/.test(fileUri.fsPath))
+        detectedFramework = 'Python';
+    else if (/require\(['"]express['"]\)/.test(fileContent) || /from\s+['"]express['"]/.test(fileContent))
+        detectedFramework = 'Node.js';
+    const framework = await vscode.window.showQuickPick(frameworks, {
+        placeHolder: 'Select the framework',
+        ...(detectedFramework && { activeItem: detectedFramework })
     });
     if (!framework)
         return;
@@ -137,8 +157,6 @@ async function generateTests(uri) {
     const apiKey = "";
     // const apiUrl = vscode.workspace.getConfiguration('openai').get('apiUrl') as string;
     // const apiKey = vscode.workspace.getConfiguration('openai').get('apiKey') as string;
-    // Read file content
-    const fileContent = (await vscode.workspace.openTextDocument(fileUri)).getText();
     const openAIClient = new openaiClient_1.OpenAIClient(apiUrl, apiKey);
     const testRequest = {
         testType: testType === 'Unit Test' ? 'unit' : 'integration',
@@ -194,8 +212,13 @@ class OpenAIClient {
             baseURL: apiUrl
         });
     }
-    async generateTests(request) {
-        const prompt = `Generate a ${request.testType} test using ${request.framework} for the following file (${request.fileName}):\n${request.fileContent}`;
+    async generateTests(request, existingSpecContent) {
+        let prompt = `Generate a ${request.testType} test using ${request.framework} for the following file (${request.fileName}):\n${request.fileContent}\n`;
+        if (existingSpecContent) {
+            prompt += `\nThe current test file contains the following tests:\n${existingSpecContent}\n`;
+            prompt += `If possible, improve or add missing tests. Do not duplicate existing tests.`;
+        }
+        prompt += `\nReturn ONLY the code for the complete test file, with no explanation or commentary. nad Do Not include import statements., and do not include triple backticks.`;
         const response = await this.openai.chat.completions.create({
             model: 'qwen2.5-7b-instruct-1m',
             messages: [

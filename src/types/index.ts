@@ -5,7 +5,7 @@ export interface OpenAIConfig {
 
 export interface TestRequest {
   testType: 'unit' | 'integration';
-  framework: 'Angular' | 'React';
+  framework: 'Angular' | 'React' | 'Vue' | 'Node.js' | 'Playwright' | 'Java' | 'Python';
   fileName: string;
   fileContent: string;
 }
